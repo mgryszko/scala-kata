@@ -44,12 +44,28 @@ class Test extends AnyFunSuite {
     assert(move(Backward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
     assert(move(Backward, MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
   }
+
+  test("single turn right command") {
+    assert(move(Right, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
+    assert(move(Right, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), South))
+    assert(move(Right, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), West))
+    assert(move(Right, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), North))
+  }
+
+  test("single turn left command") {
+    assert(move(Left, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
+    assert(move(Left, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), North))
+    assert(move(Left, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), East))
+    assert(move(Left, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), South))
+  }
 }
 
 object MarsRover {
   def move(command: Command, rover: MarsRover): MarsRover = command match {
     case Forward => moveForward(rover)
     case Backward => moveBackward(rover)
+    case Left => turnLeft(rover)
+    case Right => turnRight(rover)
   }
 
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
@@ -70,6 +86,12 @@ object MarsRover {
 
   def turnLeft(rover: MarsRover): MarsRover = rover.copy(direction = rover.direction.left)
 }
+
+sealed trait Command
+case object Forward extends Command
+case object Backward extends Command
+case object Left extends Command
+case object Right extends Command
 
 case class MarsRover(position: Position, direction: Direction)
 
@@ -104,7 +126,3 @@ case object West extends Direction {
 
   override def left: Direction = South
 }
-
-sealed trait Command
-case object Forward extends Command
-case object Backward extends Command
