@@ -20,23 +20,28 @@ class Test extends AnyFunSuite {
 
 object MarsRover {
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
-    case North => rover.copy(position = Position(rover.position.x, rover.position.y + 1))
-    case East => rover.copy(position = Position(rover.position.x + 1, rover.position.y))
-    case South => rover.copy(position = Position(rover.position.x, rover.position.y - 1))
-    case West => rover.copy(position = Position(rover.position.x - 1, rover.position.y))
+    case North => rover.copy(position = rover.position.up)
+    case East => rover.copy(position = rover.position.right)
+    case South => rover.copy(position = rover.position.down)
+    case West => rover.copy(position = rover.position.left)
   }
 
   def moveBackward(rover: MarsRover): MarsRover = rover.direction match {
-    case North => rover.copy(position = Position(rover.position.x, rover.position.y - 1))
-    case East => rover.copy(position = Position(rover.position.x - 1, rover.position.y))
-    case South => rover.copy(position = Position(rover.position.x, rover.position.y + 1))
-    case West => rover.copy(position = Position(rover.position.x + 1, rover.position.y))
+    case North => rover.copy(position = rover.position.down)
+    case East => rover.copy(position = rover.position.left)
+    case South => rover.copy(position = rover.position.up)
+    case West => rover.copy(position = rover.position.right)
   }
 }
 
 case class MarsRover(position: Position, direction: Direction)
 
-case class Position(x: Int, y: Int)
+case class Position(x: Int, y: Int) {
+  def up: Position = Position(x, y + 1)
+  def right: Position = Position(x + 1, y)
+  def down: Position = Position(x, y - 1)
+  def left: Position = Position(x - 1, y)
+}
 
 sealed class Direction
 case object North extends Direction
