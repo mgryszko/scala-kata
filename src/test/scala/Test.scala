@@ -3,6 +3,15 @@ import org.scalatest.funspec.AnyFunSpec
 class Test extends AnyFunSpec {
   import MarsRover._
 
+  describe("command processing") {
+    it("single command") {
+      assert(move(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+      assert(move(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+      assert(move(List(Right), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
+      assert(move(List(Left), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
+    }
+  }
+
   describe("rover movements") {
     it("moves forward") {
       assert(move(Forward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
@@ -35,6 +44,8 @@ class Test extends AnyFunSpec {
 }
 
 object MarsRover {
+  def move(commands: List[Command], rover: MarsRover): MarsRover = move(commands(0), rover)
+
   def move(command: Command, rover: MarsRover): MarsRover = command match {
     case Forward => moveForward(rover)
     case Backward => moveBackward(rover)
