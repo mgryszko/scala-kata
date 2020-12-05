@@ -6,15 +6,11 @@ class Test extends AnyFunSpec {
   describe("command processing") {
     it("single command") {
       val movementsByCommands: Map[Command, MarsRover => MarsRover] = Map(
-        Forward -> moveForward,
-        Backward -> moveBackward,
-        Right -> turnRight,
-        Left -> turnLeft,
+        Forward -> { rover => rover.copy(position = rover.position.up) },
+        Backward -> { rover => rover.copy(position = rover.position.down) },
       )
       assert(mv(movementsByCommands)(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
       assert(mv(movementsByCommands)(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
-      assert(mv(movementsByCommands)(List(Right), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
-      assert(mv(movementsByCommands)(List(Left), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
     }
   }
 
