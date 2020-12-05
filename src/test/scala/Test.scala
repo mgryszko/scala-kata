@@ -1,34 +1,36 @@
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.funspec.AnyFunSpec
 
-class Test extends AnyFunSuite {
+class Test extends AnyFunSpec {
   import MarsRover._
 
-  test("move forward") {
-    assert(move(Forward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
-    assert(move(Forward, MarsRover(Position(0, 0), East)) == MarsRover(Position(1, 0), East))
-    assert(move(Forward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, -1), South))
-    assert(move(Forward, MarsRover(Position(0, 0), West)) == MarsRover(Position(-1, 0), West))
-  }
+  describe("rover movements") {
+    it("moves forward") {
+      assert(move(Forward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+      assert(move(Forward, MarsRover(Position(0, 0), East)) == MarsRover(Position(1, 0), East))
+      assert(move(Forward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, -1), South))
+      assert(move(Forward, MarsRover(Position(0, 0), West)) == MarsRover(Position(-1, 0), West))
+    }
 
-  test("move backward") {
-    assert(move(Backward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
-    assert(move(Backward, MarsRover(Position(0, 0), East)) == MarsRover(Position(-1, 0), East))
-    assert(move(Backward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
-    assert(move(Backward, MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
-  }
+    it("moves backward") {
+      assert(move(Backward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+      assert(move(Backward, MarsRover(Position(0, 0), East)) == MarsRover(Position(-1, 0), East))
+      assert(move(Backward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
+      assert(move(Backward, MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
+    }
 
-  test("turn right") {
-    assert(move(Right, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
-    assert(move(Right, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), South))
-    assert(move(Right, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), West))
-    assert(move(Right, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), North))
-  }
+    it("turns right") {
+      assert(move(Right, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
+      assert(move(Right, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), South))
+      assert(move(Right, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), West))
+      assert(move(Right, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), North))
+    }
 
-  test("turn left") {
-    assert(move(Left, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
-    assert(move(Left, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), North))
-    assert(move(Left, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), East))
-    assert(move(Left, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), South))
+    it("turns left") {
+      assert(move(Left, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
+      assert(move(Left, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), North))
+      assert(move(Left, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), East))
+      assert(move(Left, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), South))
+    }
   }
 }
 
