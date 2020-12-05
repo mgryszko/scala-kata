@@ -4,13 +4,15 @@ class Test extends AnyFunSpec {
   import MarsRover._
 
   describe("command processing") {
-    it("single command") {
+    it("multiple commands") {
       val movementsByCommands: Map[Command, MarsRover => MarsRover] = Map(
         Forward -> { rover => rover.copy(position = rover.position.up) },
         Backward -> { rover => rover.copy(position = rover.position.down) },
       )
       assert(move(movementsByCommands)(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
       assert(move(movementsByCommands)(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+      assert(move(movementsByCommands)(List(Forward, Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 2), North))
+      assert(move(movementsByCommands)(List(Forward, Forward, Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
     }
   }
 
@@ -46,8 +48,9 @@ class Test extends AnyFunSpec {
 }
 
 object MarsRover {
-  def move(movementsByCommands: Map[Command, MarsRover => MarsRover])(commands: List[Command], rover: MarsRover): MarsRover =
-    movementsByCommands(commands.head)(rover)
+  def move(movementsByCommands: Map[Command, MarsRover => MarsRover])(commands: List[Command], rover: MarsRover): MarsRover = {
+    commands.foldLeft(rover) { (rover, command) => movementsByCommands(command)(rover) }
+  }
 
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
     case North => rover.copy(position = rover.position.up)
