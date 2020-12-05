@@ -19,6 +19,8 @@ class Test extends AnyFunSuite {
 }
 
 object MarsRover {
+  implicit def tupleToPosition(pos: (Int, Int)): Position = Position(pos._1, pos._2)
+
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
     case North => rover.copy(position = (rover.position._1, rover.position._2 + 1))
     case East =>rover.copy(position = (rover.position._1 + 1, rover.position._2))
@@ -34,7 +36,9 @@ object MarsRover {
   }
 }
 
-case class MarsRover(position: (Int, Int), direction: Direction)
+case class MarsRover(position: Position, direction: Direction)
+
+case class Position(_1: Int, _2: Int)
 
 sealed class Direction
 case object North extends Direction
