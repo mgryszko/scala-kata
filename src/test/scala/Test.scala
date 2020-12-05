@@ -5,10 +5,16 @@ class Test extends AnyFunSpec {
 
   describe("command processing") {
     it("single command") {
-      assert(move(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
-      assert(move(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
-      assert(move(List(Right), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
-      assert(move(List(Left), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
+      val movementsByCommands: Map[Command, MarsRover => MarsRover] = Map(
+        Forward -> moveForward,
+        Backward -> moveBackward,
+        Right -> turnRight,
+        Left -> turnLeft,
+      )
+      assert(mv(movementsByCommands)(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+      assert(mv(movementsByCommands)(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+      assert(mv(movementsByCommands)(List(Right), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
+      assert(mv(movementsByCommands)(List(Left), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
     }
   }
 
@@ -44,7 +50,8 @@ class Test extends AnyFunSpec {
 }
 
 object MarsRover {
-  def move(commands: List[Command], rover: MarsRover): MarsRover = move(commands(0), rover)
+  def mv(movementsByCommands: Map[Command, MarsRover => MarsRover])(commands: List[Command], rover: MarsRover): MarsRover =
+    movementsByCommands(commands.head)(rover)
 
   def move(command: Command, rover: MarsRover): MarsRover = command match {
     case Forward => moveForward(rover)
@@ -53,23 +60,23 @@ object MarsRover {
     case Right => turnRight(rover)
   }
 
-  private def moveForward(rover: MarsRover): MarsRover = rover.direction match {
+  def moveForward(rover: MarsRover): MarsRover = rover.direction match {
     case North => rover.copy(position = rover.position.up)
     case East => rover.copy(position = rover.position.right)
     case South => rover.copy(position = rover.position.down)
     case West => rover.copy(position = rover.position.left)
   }
 
-  private def moveBackward(rover: MarsRover): MarsRover = rover.direction match {
+  def moveBackward(rover: MarsRover): MarsRover = rover.direction match {
     case North => rover.copy(position = rover.position.down)
     case East => rover.copy(position = rover.position.left)
     case South => rover.copy(position = rover.position.up)
     case West => rover.copy(position = rover.position.right)
   }
 
-  private def turnRight(rover: MarsRover): MarsRover = rover.copy(direction = rover.direction.right)
+  def turnRight(rover: MarsRover): MarsRover = rover.copy(direction = rover.direction.right)
 
-  private def turnLeft(rover: MarsRover): MarsRover = rover.copy(direction = rover.direction.left)
+  def turnLeft(rover: MarsRover): MarsRover = rover.copy(direction = rover.direction.left)
 }
 
 sealed trait Command
