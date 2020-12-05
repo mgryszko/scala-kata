@@ -9,52 +9,45 @@ class Test extends AnyFunSpec {
         Forward -> { rover => rover.copy(position = rover.position.up) },
         Backward -> { rover => rover.copy(position = rover.position.down) },
       )
-      assert(mv(movementsByCommands)(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
-      assert(mv(movementsByCommands)(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+      assert(move(movementsByCommands)(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+      assert(move(movementsByCommands)(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
     }
   }
 
   describe("rover movements") {
     it("moves forward") {
-      assert(move(Forward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
-      assert(move(Forward, MarsRover(Position(0, 0), East)) == MarsRover(Position(1, 0), East))
-      assert(move(Forward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, -1), South))
-      assert(move(Forward, MarsRover(Position(0, 0), West)) == MarsRover(Position(-1, 0), West))
+      assert(moveForward(MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+      assert(moveForward(MarsRover(Position(0, 0), East)) == MarsRover(Position(1, 0), East))
+      assert(moveForward(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, -1), South))
+      assert(moveForward(MarsRover(Position(0, 0), West)) == MarsRover(Position(-1, 0), West))
     }
 
     it("moves backward") {
-      assert(move(Backward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
-      assert(move(Backward, MarsRover(Position(0, 0), East)) == MarsRover(Position(-1, 0), East))
-      assert(move(Backward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
-      assert(move(Backward, MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
+      assert(moveBackward(MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+      assert(moveBackward(MarsRover(Position(0, 0), East)) == MarsRover(Position(-1, 0), East))
+      assert(moveBackward(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
+      assert(moveBackward(MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
     }
 
     it("turns right") {
-      assert(move(Right, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
-      assert(move(Right, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), South))
-      assert(move(Right, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), West))
-      assert(move(Right, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), North))
+      assert(turnRight(MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
+      assert(turnRight(MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), South))
+      assert(turnRight(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), West))
+      assert(turnRight(MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), North))
     }
 
     it("turns left") {
-      assert(move(Left, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
-      assert(move(Left, MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), North))
-      assert(move(Left, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), East))
-      assert(move(Left, MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), South))
+      assert(turnLeft(MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), West))
+      assert(turnLeft(MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), North))
+      assert(turnLeft(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), East))
+      assert(turnLeft(MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), South))
     }
   }
 }
 
 object MarsRover {
-  def mv(movementsByCommands: Map[Command, MarsRover => MarsRover])(commands: List[Command], rover: MarsRover): MarsRover =
+  def move(movementsByCommands: Map[Command, MarsRover => MarsRover])(commands: List[Command], rover: MarsRover): MarsRover =
     movementsByCommands(commands.head)(rover)
-
-  def move(command: Command, rover: MarsRover): MarsRover = command match {
-    case Forward => moveForward(rover)
-    case Backward => moveBackward(rover)
-    case Left => turnLeft(rover)
-    case Right => turnRight(rover)
-  }
 
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
     case North => rover.copy(position = rover.position.up)
