@@ -16,6 +16,13 @@ class Test extends AnyFunSuite {
     assert(moveBackward(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
     assert(moveBackward(MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
   }
+
+  test("turn right") {
+    assert(turnRight(MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 0), East))
+    assert(turnRight(MarsRover(Position(0, 0), East)) == MarsRover(Position(0, 0), South))
+    assert(turnRight(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), West))
+    assert(turnRight(MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), North))
+  }
 }
 
 object MarsRover {
@@ -32,6 +39,8 @@ object MarsRover {
     case South => rover.copy(position = rover.position.up)
     case West => rover.copy(position = rover.position.right)
   }
+
+  def turnRight(rover: MarsRover): MarsRover = rover.copy(direction = rover.direction.right)
 }
 
 case class MarsRover(position: Position, direction: Direction)
@@ -43,8 +52,18 @@ case class Position(x: Int, y: Int) {
   def left: Position = Position(x - 1, y)
 }
 
-sealed class Direction
-case object North extends Direction
-case object East extends Direction
-case object South extends Direction
-case object West extends Direction
+sealed trait Direction {
+  def right: Direction
+}
+case object North extends Direction {
+  override def right: Direction = East
+}
+case object East extends Direction {
+  override def right: Direction = South
+}
+case object South extends Direction {
+  override def right: Direction = West
+}
+case object West extends Direction {
+  override def right: Direction = North
+}
