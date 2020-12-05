@@ -30,9 +30,20 @@ class Test extends AnyFunSuite {
     assert(turnLeft(MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 0), East))
     assert(turnLeft(MarsRover(Position(0, 0), West)) == MarsRover(Position(0, 0), South))
   }
+
+  test("single forward command") {
+    assert(move(Forward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+    assert(move(Forward, MarsRover(Position(0, 0), East)) == MarsRover(Position(1, 0), East))
+    assert(move(Forward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, -1), South))
+    assert(move(Forward, MarsRover(Position(0, 0), West)) == MarsRover(Position(-1, 0), West))
+  }
 }
 
 object MarsRover {
+  def move(command: Command, rover: MarsRover): MarsRover = command match {
+    case Forward => moveForward(rover)
+  }
+
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
     case North => rover.copy(position = rover.position.up)
     case East => rover.copy(position = rover.position.right)
@@ -85,3 +96,6 @@ case object West extends Direction {
 
   override def left: Direction = South
 }
+
+sealed trait Command
+case object Forward extends Command
