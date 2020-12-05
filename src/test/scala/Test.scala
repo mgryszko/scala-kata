@@ -37,11 +37,19 @@ class Test extends AnyFunSuite {
     assert(move(Forward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, -1), South))
     assert(move(Forward, MarsRover(Position(0, 0), West)) == MarsRover(Position(-1, 0), West))
   }
+
+  test("single backward command") {
+    assert(move(Backward, MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
+    assert(move(Backward, MarsRover(Position(0, 0), East)) == MarsRover(Position(-1, 0), East))
+    assert(move(Backward, MarsRover(Position(0, 0), South)) == MarsRover(Position(0, 1), South))
+    assert(move(Backward, MarsRover(Position(0, 0), West)) == MarsRover(Position(1, 0), West))
+  }
 }
 
 object MarsRover {
   def move(command: Command, rover: MarsRover): MarsRover = command match {
     case Forward => moveForward(rover)
+    case Backward => moveBackward(rover)
   }
 
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
@@ -99,3 +107,4 @@ case object West extends Direction {
 
 sealed trait Command
 case object Forward extends Command
+case object Backward extends Command
