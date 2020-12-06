@@ -1,22 +1,43 @@
 import org.scalatest.funspec.AnyFunSpec
 
-class Test extends AnyFunSpec {
-  import MarsRover._
+import scala.collection.mutable.ListBuffer
 
+class Test extends AnyFunSpec {
   describe("command processing") {
-    it("multiple commands") {
+    def fixture = new {
+      val commands = ListBuffer[Command]()
       val movementsByCommands: Map[Command, MarsRover => MarsRover] = Map(
-        Forward -> { rover => rover.copy(position = rover.position.up) },
-        Backward -> { rover => rover.copy(position = rover.position.down) },
+        Forward -> { rover: MarsRover => commands += Forward; rover.copy(position = rover.position.up) },
+        Backward -> { rover: MarsRover => commands += Backward; rover.copy(position = rover.position.up) }
       )
-      assert(move(movementsByCommands)(List(Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
-      assert(move(movementsByCommands)(List(Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, -1), North))
-      assert(move(movementsByCommands)(List(Forward, Forward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 2), North))
-      assert(move(movementsByCommands)(List(Forward, Forward, Backward), MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
+      val move: (List[Command], MarsRover) => MarsRover = MarsRover.move(movementsByCommands)(_, _)
+    }
+
+    it("one command") {
+      val f = fixture
+      val rover = f.move(List(Forward), MarsRover(Position(0, 0), North))
+      assert(rover == MarsRover(Position(0, 1), North))
+      assert(f.commands == List(Forward))
+    }
+
+    it("two commands") {
+      val f = fixture
+      val rover = f.move(List(Forward, Backward), MarsRover(Position(0, 0), North))
+      assert(rover == MarsRover(Position(0, 2), North))
+      assert(f.commands == List(Forward, Backward))
+    }
+
+    it("three commands") {
+      val f = fixture
+      val rover = f.move(List(Forward, Forward, Backward), MarsRover(Position(0, 0), North))
+      assert(rover == MarsRover(Position(0, 3), North))
+      assert(f.commands == List(Forward, Forward, Backward))
     }
   }
 
   describe("rover movements") {
+    import MarsRover._
+
     it("moves forward") {
       assert(moveForward(MarsRover(Position(0, 0), North)) == MarsRover(Position(0, 1), North))
       assert(moveForward(MarsRover(Position(0, 0), East)) == MarsRover(Position(1, 0), East))

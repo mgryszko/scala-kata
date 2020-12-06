@@ -6,4 +6,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.3" % "test"
 )
 
-scalacOptions += "-Xfatal-warnings"
+scalacOptions ++= Seq(
+  "-Xfatal-warnings",
+  "-feature",
+  "-language:reflectiveCalls"
+)
