@@ -6,11 +6,11 @@ class Test extends AnyFunSpec {
   describe("command processing") {
     def fixture = new {
       val commands = ListBuffer[Command]()
-      val movementsByCommands: Map[Command, MarsRover => MarsRover] = Map(
-        Forward -> { rover: MarsRover => commands += Forward; rover.copy(position = rover.position.up) },
-        Backward -> { rover: MarsRover => commands += Backward; rover.copy(position = rover.position.up) }
-      )
-      val move: (List[Command], MarsRover) => MarsRover = MarsRover.move(movementsByCommands)(_, _)
+      val commandToMovement: Command => MarsRover => MarsRover = { command =>
+        commands += command
+        rover => rover.copy(position = rover.position.up)
+      }
+      val move: (List[Command], MarsRover) => MarsRover = MarsRover.move(commandToMovement)(_, _)
     }
 
     it("one command") {
@@ -69,8 +69,8 @@ class Test extends AnyFunSpec {
 }
 
 object MarsRover {
-  def move(movementsByCommands: Map[Command, MarsRover => MarsRover])(commands: List[Command], rover: MarsRover): MarsRover = {
-    commands.foldLeft(rover) { (rover, command) => movementsByCommands(command)(rover) }
+  def move(commandToMovement: Command => MarsRover => MarsRover)(commands: List[Command], rover: MarsRover): MarsRover = {
+    commands.foldLeft(rover) { (rover, command) => commandToMovement(command)(rover) }
   }
 
   def moveForward(rover: MarsRover): MarsRover = rover.direction match {
