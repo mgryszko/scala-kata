@@ -4,49 +4,53 @@ import scala.collection.mutable.ListBuffer
 
 class Test extends AnyFunSpec {
   describe("command processing") {
-    def fixture = new {
-      val commands = ListBuffer[Command]()
-      val commandToMovement: Command => MarsRover => MarsRover = { command =>
-        commands += command
-        rover => rover.copy(position = rover.position.up)
-      }
-      val move: (List[Command], MarsRover) => MarsRover = MarsRover.move(commandToMovement)(_, _)
-    }
-
-    it("one command") {
-      val f = fixture
-      val rover = f.move(List(Forward), MarsRover(Position(0, 0), North))
-      assert(rover == MarsRover(Position(0, 1), North))
-      assert(f.commands == List(Forward))
-    }
-
-    it("two commands") {
-      val f = fixture
-      val rover = f.move(List(Forward, Backward), MarsRover(Position(0, 0), North))
-      assert(rover == MarsRover(Position(0, 2), North))
-      assert(f.commands == List(Forward, Backward))
-    }
-
-    it("three commands") {
-      val f = fixture
-      val rover = f.move(List(Forward, Forward, Backward), MarsRover(Position(0, 0), North))
-      assert(rover == MarsRover(Position(0, 3), North))
-      assert(f.commands == List(Forward, Forward, Backward))
-    }
-
-    it("obstacle on the way") {
-      val commands = ListBuffer[Command]()
-      val commandToMovement: Command => MarsRover => Either[MarsRover, MarsRover] = { command =>
-        commands += command
-        command match {
-          case Clockwise => rover => Left(rover)
-          case _ => rover => Right(rover.copy(position = rover.position.up))
+    describe("without obstacles") {
+      def fixture = new {
+        val commands: ListBuffer[Command] = ListBuffer[Command]()
+        private val commandToMovement: Command => MarsRover => MarsRover = { command =>
+          commands += command
+          rover => rover.copy(position = rover.position.up)
         }
+        val move: (List[Command], MarsRover) => MarsRover = MarsRover.move(commandToMovement)(_, _)
       }
-      val rover = MarsRover.moveDetectingObstacle(commandToMovement)(List(Forward, Clockwise, Forward), MarsRover(Position(0, 0), North))
 
-      assert(rover == Left(MarsRover(Position(0, 1), North)))
-      assert(commands == List(Forward, Clockwise))
+      it("one command") {
+        val f = fixture
+        val rover = f.move(List(Forward), MarsRover(Position(0, 0), North))
+        assert(rover == MarsRover(Position(0, 1), North))
+        assert(f.commands == List(Forward))
+      }
+
+      it("two commands") {
+        val f = fixture
+        val rover = f.move(List(Forward, Backward), MarsRover(Position(0, 0), North))
+        assert(rover == MarsRover(Position(0, 2), North))
+        assert(f.commands == List(Forward, Backward))
+      }
+
+      it("three commands") {
+        val f = fixture
+        val rover = f.move(List(Forward, Forward, Backward), MarsRover(Position(0, 0), North))
+        assert(rover == MarsRover(Position(0, 3), North))
+        assert(f.commands == List(Forward, Forward, Backward))
+      }
+    }
+
+    describe("with obstacle") {
+      it("obstacle on the way") {
+        val commands = ListBuffer[Command]()
+        val commandToMovement: Command => MarsRover => Either[MarsRover, MarsRover] = { command =>
+          commands += command
+          command match {
+            case Clockwise => rover => Left(rover)
+            case _ => rover => Right(rover.copy(position = rover.position.up))
+          }
+        }
+        val rover = MarsRover.moveDetectingObstacle(commandToMovement)(List(Forward, Clockwise, Forward), MarsRover(Position(0, 0), North))
+
+        assert(rover == Left(MarsRover(Position(0, 1), North)))
+        assert(commands == List(Forward, Clockwise))
+      }
     }
   }
 
