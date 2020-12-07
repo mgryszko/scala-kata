@@ -44,13 +44,14 @@ class Test extends AnyFunSpec {
         val commandToMovement: Command => MarsRover => MoveResult = { command =>
           commands += command
           command match {
-            case Clockwise => rover => Left(rover)
-            case _ => rover => Right(rover.copy(position = rover.position.up))
+            case Clockwise => rover => ObstacleDetected(rover)
+            case _ => rover => Moved(rover.copy(position = rover.position.up))
           }
         }
+
         val rover = moveDetectingObstacle(commandToMovement)(List(Forward, Clockwise, Forward), MarsRover(Position(0, 0), North))
 
-        assert(rover == Left(MarsRover(Position(0, 1), North)))
+        assert(rover == ObstacleDetected(MarsRover(Position(0, 1), North)))
         assert(commands == List(Forward, Clockwise))
       }
     }
@@ -91,6 +92,16 @@ class Test extends AnyFunSpec {
 
 object MarsRover {
   type MoveResult = Either[MarsRover, MarsRover]
+  type ObstacleDetected = Left[MarsRover, MarsRover]
+  type Moved = Right[MarsRover, MarsRover]
+
+  object ObstacleDetected {
+    def apply(rover: MarsRover) = Left(rover)
+  }
+
+  object Moved {
+    def apply(rover: MarsRover) = Right(rover)
+  }
 
   def move(commandToMovement: Command => MarsRover => MarsRover)(commands: List[Command], rover: MarsRover): MarsRover = {
     commands.foldLeft(rover) { (rover, command) => commandToMovement(command)(rover) }
