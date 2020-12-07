@@ -1,4 +1,3 @@
-import MarsRover.MoveResult
 import org.scalatest.funspec.AnyFunSpec
 
 import scala.collection.mutable.ListBuffer
@@ -6,6 +5,7 @@ import scala.collection.mutable.ListBuffer
 class Test extends AnyFunSpec {
   describe("command processing") {
     describe("without obstacles") {
+      import MarsRover.MoveResult
       import MarsRover.Moved
 
       def fixture = new {
@@ -60,6 +60,37 @@ class Test extends AnyFunSpec {
     }
   }
 
+  describe("obstacle detection") {
+    import MarsRover._
+
+    def fixture = new {
+      var command: Option[Command] = None
+      val commandToMovement: Command => MarsRover => MarsRover = { cmd =>
+        command = Some(cmd);
+        { rover: MarsRover => rover.copy(position = rover.position.up) }
+      }
+      val detect: (Position => Boolean) => (Command, MarsRover) => MoveResult = detectObstacle(commandToMovement)
+    }
+
+    it("next movement hits an obstacle") {
+      val f = fixture
+
+      val nextRover = f.detect(_ => true)(Forward, MarsRover(Position(0, 0), North))
+
+      assert(nextRover == ObstacleDetected(MarsRover(Position(0, 0), North)))
+      assert(f.command.contains(Forward))
+    }
+
+    it("clear way for the next movement") {
+      val f = fixture
+
+      val nextRover = f.detect(_ => false)(Forward, MarsRover(Position(0, 1), North))
+
+      assert(nextRover == Moved(MarsRover(Position(0, 2), North)))
+      assert(f.command.contains(Forward))
+    }
+  }
+
   describe("rover movements") {
     import MarsRover._
 
@@ -109,6 +140,15 @@ object MarsRover {
   def move(commandToMovement: Command => MarsRover => MoveResult)(commands: List[Command], rover: MarsRover): MoveResult = {
     commands.foldLeft(Right(rover): MoveResult) { (rover, command) =>
       rover.flatMap(commandToMovement(command)(_))
+    }
+  }
+
+  def detectObstacle(commandToMovement: Command => MarsRover => MarsRover)(obstacleHit: Position => Boolean)(command: Command, rover: MarsRover): MoveResult = {
+    val roverAtNextPos = commandToMovement(command)(rover)
+    if (obstacleHit(roverAtNextPos.position)) {
+      ObstacleDetected(rover)
+    } else {
+      Moved(roverAtNextPos)
     }
   }
 
