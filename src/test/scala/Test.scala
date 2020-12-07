@@ -95,8 +95,8 @@ object MarsRover {
 sealed trait Command
 case object Forward extends Command
 case object Backward extends Command
-case object Left extends Command
-case object Right extends Command
+case object Counterclockwise extends Command
+case object Clockwise extends Command
 
 case class MarsRover(position: Position, direction: Direction)
 
