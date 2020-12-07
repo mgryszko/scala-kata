@@ -3,6 +3,33 @@ import org.scalatest.funspec.AnyFunSpec
 import scala.collection.mutable.ListBuffer
 
 class Test extends AnyFunSpec {
+  describe("all commands and obstacle detection put together") {
+    import MarsRover._
+
+    val commandToMovement: (Command, MarsRover) => MarsRover = { (command, rover) =>
+      command match {
+        case Forward => moveForward(rover)
+        case Backward => moveBackward(rover)
+        case Clockwise => turnRight(rover)
+        case Counterclockwise => turnLeft(rover)
+      }
+    }
+
+    it("without obstacles") {
+      val commands = List(Forward, Forward, Clockwise, Forward, Counterclockwise, Backward)
+
+      val movedRover = move(detectObstacle(commandToMovement)(_ => false))(commands, MarsRover(Position(0, 0), North))
+      assert(movedRover == Moved(MarsRover(Position(1, 1), North)))
+    }
+
+    it("with obstacle") {
+      val commands = List( Forward, Clockwise, Backward, Backward)
+
+      val movedRover = move(detectObstacle(commandToMovement)(_ == Position(0, -1)))(commands, MarsRover(Position(1, 1), West))
+      assert(movedRover == ObstacleDetected(MarsRover(Position(0, 0), North)))
+    }
+  }
+
   describe("command processing") {
     describe("without obstacles") {
       import MarsRover.MoveResult
@@ -10,9 +37,9 @@ class Test extends AnyFunSpec {
 
       def fixture = new {
         val commands: ListBuffer[Command] = ListBuffer[Command]()
-        private val commandToMovement: Command => MarsRover => MoveResult = { command =>
+        private val commandToMovement: (Command, MarsRover) => MoveResult = { (command, rover) =>
           commands += command
-          rover => Moved(rover.copy(position = rover.position.up))
+          Moved(rover.copy(position = rover.position.up))
         }
         val move: (List[Command], MarsRover) => MoveResult = MarsRover.move(commandToMovement)(_, _)
       }
@@ -44,11 +71,11 @@ class Test extends AnyFunSpec {
 
       it("obstacle on the way") {
         val commands = ListBuffer[Command]()
-        val commandToMovement: Command => MarsRover => MoveResult = { command =>
+        val commandToMovement: (Command, MarsRover) => MoveResult = { (command, rover) =>
           commands += command
           command match {
-            case Clockwise => rover => ObstacleDetected(rover)
-            case _ => rover => Moved(rover.copy(position = rover.position.up))
+            case Clockwise => ObstacleDetected(rover)
+            case _ => Moved(rover.copy(position = rover.position.up))
           }
         }
 
@@ -65,9 +92,9 @@ class Test extends AnyFunSpec {
 
     def fixture = new {
       var command: Option[Command] = None
-      val commandToMovement: Command => MarsRover => MarsRover = { cmd =>
-        command = Some(cmd);
-        { rover: MarsRover => rover.copy(position = rover.position.up) }
+      val commandToMovement: (Command, MarsRover) => MarsRover = { (cmd, rover) =>
+        command = Some(cmd)
+        rover.copy(position = rover.position.up)
       }
       val detect: (Position => Boolean) => (Command, MarsRover) => MoveResult = detectObstacle(commandToMovement)
     }
@@ -75,18 +102,18 @@ class Test extends AnyFunSpec {
     it("next movement hits an obstacle") {
       val f = fixture
 
-      val nextRover = f.detect(_ => true)(Forward, MarsRover(Position(0, 0), North))
+      val movedRover = f.detect(_ => true)(Forward, MarsRover(Position(0, 0), North))
 
-      assert(nextRover == ObstacleDetected(MarsRover(Position(0, 0), North)))
+      assert(movedRover == ObstacleDetected(MarsRover(Position(0, 0), North)))
       assert(f.command.contains(Forward))
     }
 
     it("clear way for the next movement") {
       val f = fixture
 
-      val nextRover = f.detect(_ => false)(Forward, MarsRover(Position(0, 1), North))
+      val movedRover = f.detect(_ => false)(Forward, MarsRover(Position(0, 1), North))
 
-      assert(nextRover == Moved(MarsRover(Position(0, 2), North)))
+      assert(movedRover == Moved(MarsRover(Position(0, 2), North)))
       assert(f.command.contains(Forward))
     }
   }
@@ -137,14 +164,14 @@ object MarsRover {
     def apply(rover: MarsRover) = Right(rover)
   }
 
-  def move(commandToMovement: Command => MarsRover => MoveResult)(commands: List[Command], rover: MarsRover): MoveResult = {
+  def move(commandToMovement: (Command, MarsRover) => MoveResult)(commands: List[Command], rover: MarsRover): MoveResult = {
     commands.foldLeft(Right(rover): MoveResult) { (rover, command) =>
-      rover.flatMap(commandToMovement(command)(_))
+      rover.flatMap(commandToMovement(command, _))
     }
   }
 
-  def detectObstacle(commandToMovement: Command => MarsRover => MarsRover)(obstacleHit: Position => Boolean)(command: Command, rover: MarsRover): MoveResult = {
-    val roverAtNextPos = commandToMovement(command)(rover)
+  def detectObstacle(commandToMovement: (Command, MarsRover) => MarsRover)(obstacleHit: Position => Boolean)(command: Command, rover: MarsRover): MoveResult = {
+    val roverAtNextPos = commandToMovement(command, rover)
     if (obstacleHit(roverAtNextPos.position)) {
       ObstacleDetected(rover)
     } else {
