@@ -1,8 +1,8 @@
-import cats.syntax.all._
 import org.scalatest.funsuite.AnyFunSuite
 
 class Test extends AnyFunSuite {
-  test("test is run") {
-    assert(true.show == false.show)
+  test("this is not available") {
+    val list = List(1, 2, 3)
+    list
   }
 }
