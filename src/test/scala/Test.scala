@@ -1,8 +1,16 @@
-import cats.syntax.all._
+import cats.effect.IO
 import org.scalatest.funsuite.AnyFunSuite
 
 class Test extends AnyFunSuite {
+  implicit def convertToIO[A](body: => A): IO[A] = IO(body)
+
   test("test is run") {
-    assert(true.show == false.show)
+    val log: IO[Unit] = println("bla")
+    val logs = for {
+      _ <- log
+      _ <- log
+    } yield ()
+    logs.unsafeRunSync()
+    logs.unsafeRunSync()
   }
 }
