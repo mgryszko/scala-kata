@@ -5,11 +5,11 @@ import cats.syntax.all._
 import org.scalatest.funsuite.AnyFunSuite
 
 object GameOfLife {
-  sealed trait Cell
-  object Alive extends Cell
-  object Dead extends Cell
+  sealed trait State
+  object Alive extends State
+  object Dead extends State
 
-  def step(cell: Cell, aliveNeighbours: Int): Cell = cell match {
+  def step(cell: State, aliveNeighbours: Int): State = cell match {
     case Alive => if (aliveNeighbours == 2 || aliveNeighbours == 3) Alive else Dead
     case Dead => if (aliveNeighbours == 3) Alive else Dead
   }
