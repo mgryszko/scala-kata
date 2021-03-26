@@ -9,7 +9,10 @@ object GameOfLife {
   object Alive extends Cell
   object Dead extends Cell
 
-  def step(cell: Cell, aliveNeighbours: Int): Cell = if (aliveNeighbours == 2 || aliveNeighbours == 3) Alive else Dead
+  def step(cell: Cell, aliveNeighbours: Int): Cell = cell match {
+    case Alive => if (aliveNeighbours == 2 || aliveNeighbours == 3) Alive else Dead
+    case Dead => if (aliveNeighbours == 3) Alive else Dead
+  }
 }
 
 class Test extends AnyFunSuite {
@@ -33,5 +36,17 @@ class Test extends AnyFunSuite {
 
   test("alive cell with 4 alive neighbours") {
     assert(step(Alive, 4) === Dead)
+  }
+
+  test("dead cell with 2 alive neighbours") {
+    assert(step(Dead, 2) === Dead)
+  }
+
+  test("dead cell with 3 alive neighbours") {
+    assert(step(Dead, 3) === Alive)
+  }
+
+  test("dead cell with 4 alive neighbours") {
+    assert(step(Dead, 4) === Dead)
   }
 }
