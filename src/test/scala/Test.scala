@@ -24,6 +24,8 @@ object GameOfLife {
 
   case class Cell(pos: Position, state: State)
 
+  type Population = List[Position]
+
   def step(cell: State, aliveNeighbours: Int): State = cell match {
     case Alive => if (aliveNeighbours == 2 || aliveNeighbours == 3) Alive else Dead
     case Dead => if (aliveNeighbours == 3) Alive else Dead
@@ -32,9 +34,9 @@ object GameOfLife {
   def cellAt(board: List[Position], pos: Position): State =
     if (board.contains(pos)) Alive else Dead
 
-  def meAndNeighbours(board: List[Position]): List[Cell] = {
-    val h = board.head
-    surroundings(h).map(p => Cell(p, cellAt(board, p)))
+  def meAndNeighbours(population: Population): List[Cell] = {
+    val h = population.head
+    surroundings(h).map(p => Cell(p, cellAt(population, p)))
   }
 
   private def surroundings(pos: Position): List[Position] =
