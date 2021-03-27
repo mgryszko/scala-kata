@@ -43,15 +43,15 @@ object GameOfLife {
   }
 
   def meAndNeighbours(population: Population): Set[Cell] = {
-    (for {
-      p <- population
-      s <- surroundings(p)
-    } yield toCell(s, population)).toSet
+    val allNeighbours = for {
+      alivePosition <- population
+      neighbour <- neighbours(alivePosition)
+    } yield toCell(neighbour, population)
+    (allNeighbours ++ population.map(_.alive)).toSet
   }
 
-  private def surroundings(pos: Position): List[Position] =
+  private def neighbours(pos: Position): List[Position] =
     List(
-      pos,
       pos.north,
       pos.northWest,
       pos.west,
