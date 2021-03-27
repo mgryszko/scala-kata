@@ -6,8 +6,12 @@ import org.scalatest.funspec.AnyFunSpec
 
 object GameOfLife {
   sealed trait State
-  object Alive extends State
-  object Dead extends State
+  object Alive extends State {
+    override def toString: String = "A"
+  }
+  object Dead extends State {
+    override def toString: String ="D"
+  }
 
   case class Position(x: Int, y: Int) {
     lazy val north: Position = Position(x, y + 1)
@@ -18,11 +22,15 @@ object GameOfLife {
     lazy val southEast: Position = Position(x - 1 , y - 1)
     lazy val east: Position = Position(x - 1, y)
     lazy val northEast: Position = Position(x - 1, y + 1)
+
+    override def toString: String = s"($x,$y)"
   }
 
   implicit def toPosition(p: (Int, Int)): Position = Position(p._1, p._2)
 
-  case class Cell(pos: Position, state: State)
+  case class Cell(pos: Position, state: State) {
+    override def toString: String = s"$pos-$state"
+  }
 
   type Population = List[Position]
 
@@ -34,9 +42,11 @@ object GameOfLife {
   def cellAt(board: List[Position], pos: Position): State =
     if (board.contains(pos)) Alive else Dead
 
-  def meAndNeighbours(population: Population): List[Cell] = {
-    val h = population.head
-    surroundings(h).map(p => Cell(p, cellAt(population, p)))
+  def meAndNeighbours(population: Population): Set[Cell] = {
+    (for {
+      p <- population
+      s <- surroundings(p)
+    } yield Cell(s, cellAt(population, s))).toSet
   }
 
   private def surroundings(pos: Position): List[Position] =
@@ -91,8 +101,9 @@ class Test extends AnyFunSpec {
   }
 
   describe("board") {
+    val blinker: List[Position] = List((0, 0) ,(0, 1), (0, 2))
+
     it("dead or alive cells") {
-      val blinker: List[Position] = List((0, 0) ,(0, 1), (0, 2))
 
       assert(cellAt(blinker, (0, 0)) === Alive)
       assert(cellAt(blinker, (0, 1)) === Alive)
@@ -113,17 +124,23 @@ class Test extends AnyFunSpec {
       assert(cellAt(blinker, (1, 2)) === Dead)
     }
 
-    it("cell and its neighbours") {
-      assert(meAndNeighbours(List((0, 0))) === List(
+    it("population and its neighbours") {
+      assert(meAndNeighbours(blinker) === Set(
         Cell((0, 0), Alive),
-        Cell((0, 1), Dead),
+        Cell((0, 1), Alive),
+        Cell((0, 2), Alive),
+        Cell((0, 3), Dead),
+        Cell((1, 3), Dead),
+        Cell((1, 2), Dead),
         Cell((1, 1), Dead),
         Cell((1, 0), Dead),
         Cell((1, -1), Dead),
-        Cell((0, -1), Dead),
         Cell((-1, -1), Dead),
+        Cell((0, -1), Dead),
         Cell((-1, 0), Dead),
-        Cell((-1, 1), Dead)
+        Cell((-1, 1), Dead),
+        Cell((-1, 2), Dead),
+        Cell((-1, 3), Dead),
       ))
     }
   }
