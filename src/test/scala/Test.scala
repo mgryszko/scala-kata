@@ -39,14 +39,11 @@ object GameOfLife {
     case Dead => if (aliveNeighbours == 3) Alive else Dead
   }
 
-  def cellAt(board: List[Position], pos: Position): State =
-    if (board.contains(pos)) Alive else Dead
-
   def meAndNeighbours(population: Population): Set[Cell] = {
     (for {
       p <- population
       s <- surroundings(p)
-    } yield Cell(s, cellAt(population, s))).toSet
+    } yield toCell(s, population)).toSet
   }
 
   private def surroundings(pos: Position): List[Position] =
@@ -61,6 +58,9 @@ object GameOfLife {
       pos.east,
       pos.northEast,
     )
+    
+  private def toCell(pos: Position, population: Population): Cell =
+    Cell(pos, if (population.contains(pos)) Alive else Dead)
 }
 
 class Test extends AnyFunSpec {
@@ -102,27 +102,6 @@ class Test extends AnyFunSpec {
 
   describe("board") {
     val blinker: List[Position] = List((0, 0) ,(0, 1), (0, 2))
-
-    it("dead or alive cells") {
-
-      assert(cellAt(blinker, (0, 0)) === Alive)
-      assert(cellAt(blinker, (0, 1)) === Alive)
-      assert(cellAt(blinker, (0, 2)) === Alive)
-
-      assert(cellAt(blinker, (-1, 0)) === Dead)
-      assert(cellAt(blinker, (-1, -1)) === Dead)
-      assert(cellAt(blinker, (0, -1)) === Dead)
-      assert(cellAt(blinker, (1, -1)) === Dead)
-      assert(cellAt(blinker, (1, 0)) === Dead)
-      assert(cellAt(blinker, (1, 1)) === Dead)
-
-      assert(cellAt(blinker, (-1, 1)) === Dead)
-      assert(cellAt(blinker, (-1, 2)) === Dead)
-      assert(cellAt(blinker, (-1, 3)) === Dead)
-      assert(cellAt(blinker, (0, 3)) === Dead)
-      assert(cellAt(blinker, (1, 3)) === Dead)
-      assert(cellAt(blinker, (1, 2)) === Dead)
-    }
 
     it("population and its neighbours") {
       assert(meAndNeighbours(blinker) === Set(
