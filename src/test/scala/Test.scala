@@ -9,7 +9,20 @@ object GameOfLife {
   object Alive extends State
   object Dead extends State
 
-  type Position = (Int, Int)
+  case class Position(x: Int, y: Int) {
+    lazy val north: Position = Position(x, y + 1)
+    lazy val northWest: Position = Position(x + 1, y + 1)
+    lazy val west: Position = Position(x + 1, y)
+    lazy val southWest: Position = Position(x + 1, y - 1)
+    lazy val south: Position = Position(x, y - 1)
+    lazy val southEast: Position = Position(x - 1 , y - 1)
+    lazy val east: Position = Position(x - 1, y)
+    lazy val northEast: Position = Position(x - 1, y + 1)
+  }
+
+  implicit def toPosition(p: (Int, Int)): Position = Position(p._1, p._2)
+
+  case class Cell(pos: Position, state: State)
 
   def step(cell: State, aliveNeighbours: Int): State = cell match {
     case Alive => if (aliveNeighbours == 2 || aliveNeighbours == 3) Alive else Dead
@@ -18,6 +31,24 @@ object GameOfLife {
 
   def cellAt(board: List[Position], pos: Position): State =
     if (board.contains(pos)) Alive else Dead
+
+  def meAndNeighbours(board: List[Position]): List[Cell] = {
+    val h = board.head
+    surroundings(h).map(p => Cell(p, cellAt(board, p)))
+  }
+
+  private def surroundings(pos: Position): List[Position] =
+    List(
+      pos,
+      pos.north,
+      pos.northWest,
+      pos.west,
+      pos.southWest,
+      pos.south,
+      pos.southEast,
+      pos.east,
+      pos.northEast,
+    )
 }
 
 class Test extends AnyFunSpec {
@@ -59,7 +90,7 @@ class Test extends AnyFunSpec {
 
   describe("board") {
     it("dead or alive cells") {
-      val blinker = List((0, 0) ,(0, 1), (0, 2))
+      val blinker: List[Position] = List((0, 0) ,(0, 1), (0, 2))
 
       assert(cellAt(blinker, (0, 0)) === Alive)
       assert(cellAt(blinker, (0, 1)) === Alive)
@@ -78,6 +109,20 @@ class Test extends AnyFunSpec {
       assert(cellAt(blinker, (0, 3)) === Dead)
       assert(cellAt(blinker, (1, 3)) === Dead)
       assert(cellAt(blinker, (1, 2)) === Dead)
+    }
+
+    it("cell and its neighbours") {
+      assert(meAndNeighbours(List((0, 0))) === List(
+        Cell((0, 0), Alive),
+        Cell((0, 1), Dead),
+        Cell((1, 1), Dead),
+        Cell((1, 0), Dead),
+        Cell((1, -1), Dead),
+        Cell((0, -1), Dead),
+        Cell((-1, -1), Dead),
+        Cell((-1, 0), Dead),
+        Cell((-1, 1), Dead)
+      ))
     }
   }
 }
