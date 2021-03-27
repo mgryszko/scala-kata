@@ -23,6 +23,9 @@ object GameOfLife {
     lazy val east: Position = Position(x - 1, y)
     lazy val northEast: Position = Position(x - 1, y + 1)
 
+    def alive: Cell = Cell(this, Alive)
+    def dead: Cell = Cell(this, Dead)
+
     override def toString: String = s"($x,$y)"
   }
 
@@ -60,7 +63,7 @@ object GameOfLife {
     )
     
   private def toCell(pos: Position, population: Population): Cell =
-    Cell(pos, if (population.contains(pos)) Alive else Dead)
+    if (population.contains(pos)) pos.alive else pos.dead
 }
 
 class Test extends AnyFunSpec {
