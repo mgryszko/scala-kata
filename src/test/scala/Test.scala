@@ -23,8 +23,8 @@ object GameOfLife {
     lazy val east: Position = Position(x - 1, y)
     lazy val northEast: Position = Position(x - 1, y + 1)
 
-    def neighbours: List[Position] =
-      List(north, northWest, west, southWest, south, southEast, east, northEast)
+    def neighbours: Set[Position] =
+      Set(north, northWest, west, southWest, south, southEast, east, northEast)
 
     override def toString: String = s"($x,$y)"
   }
@@ -43,13 +43,10 @@ object GameOfLife {
   }
 
   private def expansionArea(population: Population): Population =
-    for {
-      pos <- population
-      neighbour <- pos.neighbours
-    } yield neighbour
+    population.flatMap(_.neighbours) ++ population
 
   private def aliveNeighbours(pos: Position, population: Population): Int =
-    (pos.neighbours.toSet & population).size
+    (pos.neighbours & population).size
 }
 
 class Test extends AnyFunSpec {
