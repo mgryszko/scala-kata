@@ -5,13 +5,7 @@ import cats.syntax.all._
 import org.scalatest.funspec.AnyFunSpec
 
 object GameOfLife {
-  sealed trait State
-  object Alive extends State {
-    override def toString: String = "A"
-  }
-  object Dead extends State {
-    override def toString: String = "D"
-  }
+  type Population = Set[Position]
 
   case class Position(x: Int, y: Int) {
     lazy val north: Position = Position(x, y + 1)
@@ -23,32 +17,27 @@ object GameOfLife {
     lazy val east: Position = Position(x - 1, y)
     lazy val northEast: Position = Position(x - 1, y + 1)
 
-    def neighbours: Set[Position] = Set(north, northWest, west, southWest, south, southEast, east, northEast)
+    def neighbours: Set[Position] =
+      Set(north, northWest, west, southWest, south, southEast, east, northEast)
 
-    def selfAndNeighbours: Set[Position] = neighbours + this
+    def alive(population: Population): Boolean =
+      population.contains(this)
+
+    def aliveNeighbours(population: Population): Int =
+      (neighbours & population).size
 
     override def toString: String = s"($x,$y)"
   }
 
-  type Population = Set[Position]
-
-  def nextGen(population: Population): Population =
-    expansionArea(population).flatMap { pos =>
-      (cellState(pos, population), aliveNeighbours(pos, population)) match {
-        case (Alive, alive) if (alive == 2 || alive == 3) => Some(pos)
-        case (Dead, alive) if (alive == 3) => Some(pos)
-        case _ => None
-      }
-    }
-
-  private def expansionArea(population: Population): Set[Position] =
-    population.flatMap(_.selfAndNeighbours)
-
-  private def cellState(pos: Position, population: Population): State =
-    if (population.contains(pos)) Alive else Dead
-
-  private def aliveNeighbours(pos: Position, population: Population): Int =
-    (pos.neighbours & population).size
+  def nextGen(population: Population): Population = {
+    for {
+      cell <- population
+      pos <- cell.neighbours + cell
+      alive = pos.alive(population)
+      aliveNeighbours = pos.aliveNeighbours(population)
+      if (alive && aliveNeighbours == 2) || aliveNeighbours == 3
+    } yield pos
+  }
 }
 
 class Test extends AnyFunSpec {
