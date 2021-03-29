@@ -29,8 +29,6 @@ object GameOfLife {
     override def toString: String = s"($x,$y)"
   }
 
-  implicit def toPosition(p: (Int, Int)): Position = Position(p._1, p._2)
-
   case class Cell(pos: Position, state: State) {
     override def toString: String = s"$pos-$state"
   }
@@ -75,6 +73,8 @@ object GameOfLife {
 
 class Test extends AnyFunSpec {
   import GameOfLife._
+
+  implicit def toPosition(p: (Int, Int)): Position = Position(p._1, p._2)
 
   describe("blinker") {
     val verticalBlinker: Population = Set((0, 0), (0, 1), (0, 2))
