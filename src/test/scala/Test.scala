@@ -23,27 +23,29 @@ object GameOfLife {
     lazy val east: Position = Position(x - 1, y)
     lazy val northEast: Position = Position(x - 1, y + 1)
 
-    def neighbours: Set[Position] =
-      Set(north, northWest, west, southWest, south, southEast, east, northEast)
+    def neighbours: Set[Position] = Set(north, northWest, west, southWest, south, southEast, east, northEast)
+
+    def selfAndNeighbours: Set[Position] = neighbours + this
 
     override def toString: String = s"($x,$y)"
   }
 
   type Population = Set[Position]
 
-  def nextGen(population: Population): Population = {
+  def nextGen(population: Population): Population =
     expansionArea(population).flatMap { pos =>
-      val state = if (population.contains(pos)) Alive else Dead
-      val alive = aliveNeighbours(pos, population)
-      state match {
-        case Alive => if (alive == 2 || alive == 3) Some(pos) else None
-        case Dead => if (alive == 3) Some(pos) else None
+      (cellState(pos, population), aliveNeighbours(pos, population)) match {
+        case (Alive, alive) if (alive == 2 || alive == 3) => Some(pos)
+        case (Dead, alive) if (alive == 3) => Some(pos)
+        case _ => None
       }
     }
-  }
 
-  private def expansionArea(population: Population): Population =
-    population.flatMap(_.neighbours) ++ population
+  private def expansionArea(population: Population): Set[Position] =
+    population.flatMap(_.selfAndNeighbours)
+
+  private def cellState(pos: Position, population: Population): State =
+    if (population.contains(pos)) Alive else Dead
 
   private def aliveNeighbours(pos: Position, population: Population): Int =
     (pos.neighbours & population).size
