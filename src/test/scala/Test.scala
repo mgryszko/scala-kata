@@ -35,12 +35,19 @@ object GameOfLife {
     override def toString: String = s"$pos-$state"
   }
 
-  type Population = List[Position]
+  type Population = Set[Position]
 
-  def step(cell: State, aliveNeighbours: Int): State = cell match {
-    case Alive => if (aliveNeighbours == 2 || aliveNeighbours == 3) Alive else Dead
-    case Dead => if (aliveNeighbours == 3) Alive else Dead
-  }
+  def nextGen(population: Population): Population =
+    meAndNeighbours(population).flatMap { cell =>
+      val alive = aliveNeighbours(cell.pos, population)
+      cell match {
+        case Cell(pos, Alive) => if (alive == 2 || alive == 3) Some(pos) else None
+        case Cell(pos, Dead) => if (alive == 3) Some(pos) else None
+      }
+    }
+
+  private def aliveNeighbours(pos: Position, population: Population): Int =
+    (neighbours(pos).toSet & population).size
 
   def meAndNeighbours(population: Population): Set[Cell] = {
     val allNeighbours = for {
@@ -69,61 +76,20 @@ object GameOfLife {
 class Test extends AnyFunSpec {
   import GameOfLife._
 
-  describe("numeric alive neighbours") {
-    it("alive cell with 0 alive neighbours") {
-      assert(step(Alive, 0) === Dead)
+  describe("blinker") {
+    val verticalBlinker: Population = Set((0, 0), (0, 1), (0, 2))
+    val horizontalBlinker: Population = Set((-1, 1), (0, 1), (1, 1))
+
+    it("first generation") {
+      assert(nextGen(verticalBlinker) === horizontalBlinker)
     }
 
-    it("alive cell with 1 alive neighbours") {
-      assert(step(Alive, 1) === Dead)
+    it("second generation") {
+      assert(nextGen(nextGen(verticalBlinker)) === verticalBlinker)
     }
 
-    it("alive cell with 2 alive neighbours") {
-      assert(step(Alive, 2) === Alive)
-    }
-
-    it("alive cell with 3 alive neighbours") {
-      assert(step(Alive, 3) === Alive)
-    }
-
-    it("alive cell with 4 alive neighbours") {
-      assert(step(Alive, 4) === Dead)
-    }
-
-    it("dead cell with 2 alive neighbours") {
-      assert(step(Dead, 2) === Dead)
-    }
-
-    it("dead cell with 3 alive neighbours") {
-      assert(step(Dead, 3) === Alive)
-    }
-
-    it("dead cell with 4 alive neighbours") {
-      assert(step(Dead, 4) === Dead)
-    }
-  }
-
-  describe("board") {
-    val blinker: List[Position] = List((0, 0) ,(0, 1), (0, 2))
-
-    it("population and its neighbours") {
-      assert(meAndNeighbours(blinker) === Set(
-        Cell((0, 0), Alive),
-        Cell((0, 1), Alive),
-        Cell((0, 2), Alive),
-        Cell((0, 3), Dead),
-        Cell((1, 3), Dead),
-        Cell((1, 2), Dead),
-        Cell((1, 1), Dead),
-        Cell((1, 0), Dead),
-        Cell((1, -1), Dead),
-        Cell((-1, -1), Dead),
-        Cell((0, -1), Dead),
-        Cell((-1, 0), Dead),
-        Cell((-1, 1), Dead),
-        Cell((-1, 2), Dead),
-        Cell((-1, 3), Dead),
-      ))
+    it("third generation") {
+      assert(nextGen(nextGen(nextGen(verticalBlinker))) === horizontalBlinker)
     }
   }
 }
