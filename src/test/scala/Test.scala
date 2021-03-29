@@ -92,4 +92,37 @@ class Test extends AnyFunSpec {
       assert(nextGen(nextGen(nextGen(verticalBlinker))) === horizontalBlinker)
     }
   }
+
+  describe("block") {
+    val block: Population = Set((0, 0), (1, 0), (0, 1), (1, 1))
+
+    it("two generations") {
+      assert(nextGen(block) === block)
+      assert(nextGen(nextGen(block)) === block)
+    }
+  }
+
+  describe("glider") {
+    val glider: Population = Set((0, 0), (1, 0), (2, 0), (2, 1), (1, 2))
+    val gliderFirstGen: Population = Set((0, 1), (1, 0), (1, -1), (2, 0), (2, 1))
+    val gliderSecondGen: Population = Set((0, 0), (1, -1), (2, -1), (2, 0), (2, 1))
+    val gliderThirdGen: Population = Set((1, -1), (2, -1), (2, 0), (3, 0), (1, 1))
+    val gliderFirstPeriod: Population = glider.map { case Position(x, y) => Position(x + 1, y - 1) }
+
+    it("first generation") {
+      assert(nextGen(glider) === gliderFirstGen)
+    }
+
+    it("second generation") {
+      assert(nextGen(nextGen(glider)) === gliderSecondGen)
+    }
+
+    it("third generation") {
+      assert(nextGen(nextGen(nextGen(glider))) === gliderThirdGen)
+    }
+
+    it("fourth generation") {
+      assert(nextGen(nextGen(nextGen(nextGen(glider)))) === gliderFirstPeriod)
+    }
+  }
 }
