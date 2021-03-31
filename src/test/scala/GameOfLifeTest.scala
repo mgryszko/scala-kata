@@ -40,7 +40,7 @@ object GameOfLife {
   }
 }
 
-class Test extends AnyFunSpec {
+class GameOfLifeTest extends AnyFunSpec {
   import GameOfLife._
 
   implicit def toPosition(p: (Int, Int)): Position = Position(p._1, p._2)
